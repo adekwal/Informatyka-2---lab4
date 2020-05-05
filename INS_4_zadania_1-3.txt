@@ -1,0 +1,56 @@
+#include <iostream>
+#include <cstdlib>
+#include <math.h>
+#include "rk4.h"
+
+//zagadnienie początkowe:	{1} y'(t)=f(t,y);
+//warunek początkowy:		{2} y(t0)=y0;
+
+double t0 = 0, tk = 5;//t nalezy do takiego przedzialu
+double y_0 = 1;
+double lambda = 10;
+
+double f(double t, double y);//f(t,y);
+double y_an(double t);
+
+int main()
+{
+	double t = t0, y = y_0;
+	double h = 0.01, eps_euler = 0, eps_rk4 = 0;
+
+	FILE* dane;
+	errno_t err = fopen_s(&dane, "dane.txt", "a+");
+	
+	for (int i = 0; i < tk / h; i++)//metoda eulera
+	{
+		t += h;//czyli t[i+1] = t[i] + h;
+		y += h * f(t, y);//czyli y[i+1] = y[i] + h * f(t[i], y[i]);
+		eps_euler = fabs(y - y_an(t)) / fabs(y_an(t));
+
+		printf("%lf\t%lf\t%lf\n", t, y, eps_euler);
+	}
+
+	t = t0, y = y_0;
+	printf("----------------------------------------\n");
+
+	for (int i = 0; i < tk / h; i++)//metoda rungego-kuty
+	{
+		t += h;
+		y = rk4(t, y, h, f);
+		eps_rk4 = fabs(y - y_an(t)) / fabs(y_an(t));
+
+		printf("%lf\t%lf\t%lf\n", t, y, eps_rk4);
+	}
+	
+	//fprintf(dane, "%lf\t%lf\t%lf\t%lf\n", N, h, eps_euler, eps_rk4);
+	fclose(dane);
+}
+
+double f(double t, double y)
+{
+	return lambda * y;
+}
+double y_an(double t)
+{
+	return y_0 * exp(lambda * (t - t0));
+}
